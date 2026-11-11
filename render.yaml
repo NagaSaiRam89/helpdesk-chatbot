@@ -7,6 +7,8 @@ services:
     startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
     healthCheckPath: /api/health
     envVars:
+      - key: PYTHON_VERSION
+        value: "3.11.9"        # match locally tested Python; pydantic-core 2.27.1 has no cp314 wheels
       - key: GEMINI_API_KEY
         sync: false          # set in the Render dashboard (secret)
       - key: GEMINI_MODEL

@@ -23,7 +23,9 @@ import uuid
 
 import httpx
 
-BASE = "http://127.0.0.1:8000"
+# Local server by default; pass a deployed URL to verify production, e.g.
+#   python scripts/live_integration.py https://dpm101-helpdesk.onrender.com
+BASE = sys.argv[1] if len(sys.argv) > 1 else "http://127.0.0.1:8000"
 
 
 def ask(client, message, session_id):

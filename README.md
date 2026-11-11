@@ -84,7 +84,7 @@ Request pipeline in `app/api/chat.py` (11 steps):
 ### Project structure
 
 ```
-dpm101-helpdesk/            (D:\iimbX_assing)
+helpdesk-chatbot/            (D:\iimbX_assing)
 ├── app/
 │   ├── main.py             FastAPI entry point, lifespan, CORS, routers
 │   ├── config.py           Env-driven settings (cached singleton)

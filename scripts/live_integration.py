@@ -24,7 +24,7 @@ import uuid
 import httpx
 
 # Local server by default; pass a deployed URL to verify production, e.g.
-#   python scripts/live_integration.py https://dpm101-helpdesk.onrender.com
+#   python scripts/live_integration.py https://helpdesk-chatbot.onrender.com
 BASE = sys.argv[1] if len(sys.argv) > 1 else "http://127.0.0.1:8000"
 
 

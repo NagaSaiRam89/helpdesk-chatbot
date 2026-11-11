@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: dpm101-helpdesk
+    name: helpdesk-chatbot
     runtime: python
     plan: free
     buildCommand: pip install -r requirements.txt

@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DPM-101 Course Helpdesk</title>
+  <link rel="stylesheet" href="/static/style.css" />
+</head>
+<body>
+  <!-- ── Header ── -->
+  <header class="app-header">
+    <div class="header-inner">
+      <div class="header-title">
+        <span class="badge">IIMBx</span>
+        <h1>DPM-101 Course Helpdesk</h1>
+      </div>
+      <p class="header-sub">
+        Answers are based strictly on official DPM-101 course documents.
+      </p>
+    </div>
+    <div class="header-status">
+      <span id="api-status" class="status-dot status-unknown" title="API status"></span>
+    </div>
+  </header>
+
+  <!-- ── Analytics bar ── -->
+  <div class="stats-bar">
+    <div class="stat-item">
+      <span class="stat-label">Total Questions Asked</span>
+      <span class="stat-value" id="stat-total">—</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-label">Gemini API Calls Made</span>
+      <span class="stat-value" id="stat-gemini">—</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-label">Answers from Cache</span>
+      <span class="stat-value" id="stat-cache">—</span>
+    </div>
+  </div>
+
+  <!-- ── Main chat area ── -->
+  <main class="chat-container">
+    <div class="chat-messages" id="chat-messages" role="log" aria-live="polite">
+      <div class="welcome-message">
+        <div class="welcome-icon">📚</div>
+        <h2>Welcome to DPM-101 Helpdesk</h2>
+        <p>
+          Ask me anything about your course — exam rules, grading policy,
+          deadlines, certificate tracks, and more.
+        </p>
+        <p class="welcome-note">
+          All answers are sourced directly from official course documents.
+        </p>
+      </div>
+    </div>
+
+    <!-- ── Input area ── -->
+    <div class="input-area">
+      <div class="input-row">
+        <textarea
+          id="user-input"
+          class="chat-input"
+          placeholder="Ask a course question… (Enter to send, Shift+Enter for new line)"
+          rows="1"
+          maxlength="2000"
+          aria-label="Your question"
+        ></textarea>
+        <button id="send-btn" class="send-btn" aria-label="Send message">
+          <span class="send-icon">➤</span>
+        </button>
+      </div>
+      <div class="input-footer">
+        <button id="new-chat-btn" class="new-chat-btn" aria-label="Start new conversation">
+          ＋ New Chat
+        </button>
+        <span id="char-count" class="char-count">0 / 2000</span>
+      </div>
+    </div>
+  </main>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>
+

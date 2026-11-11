@@ -1,0 +1,22 @@
+services:
+  - type: web
+    name: dpm101-helpdesk
+    runtime: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /api/health
+    envVars:
+      - key: GEMINI_API_KEY
+        sync: false          # set in the Render dashboard (secret)
+      - key: GEMINI_MODEL
+        value: gemini-3.8-flash
+      - key: APP_ENV
+        value: production
+      - key: CORS_ORIGINS
+        value: "*"
+      # Persistent PostgreSQL is recommended on free hosting (SQLite does not
+      # survive restarts on Render's ephemeral filesystem). Point DATABASE_URL
+      # at a free Neon / Supabase / Render Postgres instance:
+      # - key: DATABASE_URL
+      #   sync: false

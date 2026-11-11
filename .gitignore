@@ -1,0 +1,29 @@
+# ── Secrets — never commit ─────────────────────────────────────────────────────
+.env
+*.env
+!.env.example
+
+# ── Python ─────────────────────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.pytest_cache/
+.coverage
+htmlcov/
+
+# ── Databases (local SQLite dev artifacts) ────────────────────────────────────
+*.db
+*.db-wal
+*.db-shm
+
+# ── OS / editor ───────────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+
+# ── Logs ──────────────────────────────────────────────────────────────────────
+*.log

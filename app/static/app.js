@@ -79,7 +79,16 @@ function formatAnswer(text) {
 }
 
 function scrollToBottom() {
-  chatMessages.scrollTop = chatMessages.scrollHeight;
+  // Wait for the browser to lay out the newly appended node, then scroll the
+  // chat pane. If the document itself is the scroller (e.g. very old browsers
+  // without dvh support), pin the page to the bottom as well.
+  requestAnimationFrame(() => {
+    chatMessages.scrollTo({ top: chatMessages.scrollHeight, behavior: "smooth" });
+    const doc = document.scrollingElement;
+    if (doc && doc.scrollHeight > window.innerHeight + 4) {
+      window.scrollTo({ top: doc.scrollHeight, behavior: "smooth" });
+    }
+  });
 }
 
 // ── Welcome screen ─────────────────────────────────────────────────────────

@@ -96,7 +96,9 @@ body {
   line-height: 1.55;
   display: flex;
   flex-direction: column;
+  min-height: 100vh;   /* fallback for browsers without dvh */
   min-height: 100dvh;
+  overflow-x: hidden;  /* safety net against any horizontal overflow */
   -webkit-font-smoothing: antialiased;
 }
 
@@ -124,6 +126,12 @@ body {
   align-items: center;
   gap: 12px;
   min-width: 0;
+  flex: 1;
+}
+
+.brand-text {
+  min-width: 0;      /* lets the subtitle truncate instead of widening the page */
+  overflow: hidden;
 }
 
 .brand-mark {
@@ -152,6 +160,9 @@ body {
   letter-spacing: 0.1px;
   color: #fff;
   white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
 }
 
 .badge {
@@ -176,6 +187,8 @@ body {
 }
 
 /* Status pill */
+.header-status { display: flex; align-items: center; flex-shrink: 0; }
+
 .status-pill {
   display: inline-flex;
   align-items: center;
@@ -311,11 +324,19 @@ body {
 
 /* ── Welcome / hero ─────────────────────────────────────────────────────── */
 .welcome-message {
-  margin: auto;
+  margin: 0 auto;
   max-width: 560px;
   text-align: center;
   padding: 24px 12px;
   animation: fadeUp 0.4s ease both;
+}
+
+/* Center the welcome vertically only when it fits; on short screens it
+   stays scrollable from the top instead of clipping. */
+@supports selector(:has(*)) {
+  .chat-messages:has(.welcome-message) {
+    justify-content: safe center;
+  }
 }
 
 .welcome-icon {

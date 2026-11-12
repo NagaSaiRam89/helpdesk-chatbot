@@ -1,8 +1,19 @@
 # ai_sessions/ — Genuine AI-Assisted Development Session Records
 
-This directory must contain **genuine exported records** of the AI-assisted
+This directory contains **genuine exported records** of the AI-assisted
 sessions used to build this project. No fabricated or synthetic transcripts
 are included.
+
+## Contents
+
+| File | Session | What it covers |
+|---|---|---|
+| `2026-11-11-dpm101-main-build-session.md` | `ses_e34c9903affeuqR3Vf3i2FcUIg` | End-to-end build: implementation, 108 automated tests, live Gemini verification (19/19), UI overhaul, GitHub and Render deployment |
+| `2026-11-11-venv-activate-bat-path.md` | `ses_e32bcf761ffeGbs3yJoKdlaZL1` | Short environment-setup question about the virtualenv activation script |
+
+Both files were generated programmatically from the local OpenCode session
+database (`opencode.db`) in original message order. Reasoning and tool-call
+blocks are collapsed in `<details>` elements. API keys are redacted.
 
 ## How to export sessions from this coding environment (OpenCode)
 

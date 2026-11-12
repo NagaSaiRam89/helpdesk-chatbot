@@ -1,11 +1,16 @@
-/* ── DPM-101 Helpdesk Frontend ─────────────────────────────────────────── */
+/* ═══════════════════════════════════════════════════════════════════════════
+   DPM-101 Course Helpdesk — frontend logic
+   Vanilla JS. No dependencies. Talks to POST /api/chat, /api/stats,
+   /api/health and POST /api/session/reset.
+   ═══════════════════════════════════════════════════════════════════════════ */
 "use strict";
 
 // ── State ──────────────────────────────────────────────────────────────────
 const STATE = {
   sessionId: generateId(),
-  pending: false,       // true while a request is in-flight
+  pending: false,          // true while a request is in-flight (double-submit guard)
   statsInterval: null,
+  lastStats: { total: null, gemini: null, cache: null },
 };
 
 // ── DOM refs ───────────────────────────────────────────────────────────────
@@ -17,7 +22,20 @@ const charCount      = document.getElementById("char-count");
 const statTotal      = document.getElementById("stat-total");
 const statGemini     = document.getElementById("stat-gemini");
 const statCache      = document.getElementById("stat-cache");
-const apiStatusDot   = document.getElementById("api-status");
+const apiStatus      = document.getElementById("api-status");
+const apiStatusText  = document.getElementById("api-status-text");
+
+// ── Quick-start suggestions (drawn from the official sample questions) ─────
+const SUGGESTIONS = [
+  { icon: "🎯", text: "What score do I need to pass?",
+    question: "What is the minimum score needed to pass the course and get a Verified Certificate?" },
+  { icon: "📅", text: "When is the Capstone due?",
+    question: "When is the Capstone Product Case due?" },
+  { icon: "📝", text: "Is the final exam open-book?",
+    question: "Is the final exam open-book or closed-book, and when is it scheduled?" },
+  { icon: "💳", text: "How much does the certificate cost?",
+    question: "How much does the Verified Certificate track cost?" },
+];
 
 // ── Utilities ──────────────────────────────────────────────────────────────
 function generateId() {
@@ -33,7 +51,7 @@ function generateId() {
 }
 
 function escapeHtml(str) {
-  return str
+  return String(str)
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;")
@@ -41,20 +59,61 @@ function escapeHtml(str) {
     .replace(/'/g, "&#39;");
 }
 
+/**
+ * Escape first, then apply light formatting: blank-line paragraphs,
+ * "-"/"•"/"*" bullet lists, and single newlines as line breaks.
+ */
 function formatAnswer(text) {
-  // Convert newlines to <br>
-  return escapeHtml(text).replace(/\n/g, "<br>");
+  const safe = escapeHtml(text).trim();
+  if (!safe) return "";
+
+  return safe.split(/\n{2,}/).map(block => {
+    const lines = block.split("\n");
+    const isList = lines.length > 1 && lines.every(l => /^\s*[-•*]\s+/.test(l));
+    if (isList) {
+      const items = lines.map(l => `<li>${l.replace(/^\s*[-•*]\s+/, "")}</li>`).join("");
+      return `<ul>${items}</ul>`;
+    }
+    return `<p>${lines.join("<br>")}</p>`;
+  }).join("");
 }
 
 function scrollToBottom() {
   chatMessages.scrollTop = chatMessages.scrollHeight;
 }
 
+// ── Welcome screen ─────────────────────────────────────────────────────────
+function renderWelcome() {
+  const chips = SUGGESTIONS.map(s => `
+    <button class="suggestion-chip" type="button" data-question="${escapeHtml(s.question)}">
+      ${escapeHtml(s.text)}
+    </button>`).join("");
+
+  chatMessages.innerHTML = `
+    <div class="welcome-message">
+      <div class="welcome-icon" aria-hidden="true">🎓</div>
+      <h2>How can I help you today?</h2>
+      <p>Ask anything about DPM-101 — exam rules, grading, deadlines,
+         certificate tracks and more.</p>
+      <div class="suggestions" aria-label="Suggested questions">${chips}</div>
+      <p class="welcome-note">🔒 Answers are sourced only from the official DPM-101 documents.</p>
+    </div>`;
+}
+
+function clearWelcome() {
+  const welcome = chatMessages.querySelector(".welcome-message");
+  if (welcome) welcome.remove();
+}
+
 // ── Render helpers ─────────────────────────────────────────────────────────
 function appendUserMessage(text) {
   const row = document.createElement("div");
   row.className = "message-row user";
-  row.innerHTML = `<div class="bubble">${escapeHtml(text)}</div>`;
+  row.innerHTML = `
+    <div class="avatar user" aria-hidden="true">🧑‍🎓</div>
+    <div class="message-content">
+      <div class="bubble">${escapeHtml(text)}</div>
+    </div>`;
   chatMessages.appendChild(row);
   scrollToBottom();
 }
@@ -63,26 +122,40 @@ function appendBotMessage(answer, sources, cached) {
   const row = document.createElement("div");
   row.className = "message-row bot";
 
-  let sourcesHtml = "";
-  if (sources && sources.length) {
-    const tags = sources.map(s => `<span class="source-tag">📄 ${escapeHtml(s)}</span>`).join("");
-    sourcesHtml = `<div class="sources-row">${tags}</div>`;
+  const meta = [];
+
+  if (cached) {
+    meta.push(`<span class="cache-tag">⚡ Served from cache</span>`);
   }
 
-  const cacheTag = cached
-    ? `<span class="cache-tag">⚡ Served from cache</span>`
-    : "";
+  (sources || []).forEach(s => {
+    meta.push(`<span class="source-tag" title="${escapeHtml(s)}">📄 ${escapeHtml(s)}</span>`);
+  });
 
-  const footerHtml = (sourcesHtml || cacheTag)
-    ? `<div class="sources-row">${cacheTag}${sources && sources.length
-        ? sources.map(s => `<span class="source-tag">📄 ${escapeHtml(s)}</span>`).join("")
-        : ""}</div>`
-    : "";
+  const copyBtn = document.createElement("button");
+  copyBtn.type = "button";
+  copyBtn.className = "copy-btn";
+  copyBtn.textContent = "Copy";
+  copyBtn.setAttribute("aria-label", "Copy answer");
+  copyBtn.addEventListener("click", async () => {
+    try {
+      await navigator.clipboard.writeText(answer);
+      copyBtn.textContent = "Copied ✓";
+    } catch (_) {
+      copyBtn.textContent = "Copy failed";
+    }
+    setTimeout(() => { copyBtn.textContent = "Copy"; }, 1600);
+  });
 
-  row.innerHTML = `
+  const content = document.createElement("div");
+  content.className = "message-content";
+  content.innerHTML = `
     <div class="bubble">${formatAnswer(answer)}</div>
-    ${footerHtml}
-  `;
+    <div class="meta-row">${meta.join("")}</div>`;
+  content.querySelector(".meta-row").appendChild(copyBtn);
+
+  row.innerHTML = `<div class="avatar bot" aria-hidden="true">🎓</div>`;
+  row.appendChild(content);
   chatMessages.appendChild(row);
   scrollToBottom();
 }
@@ -90,7 +163,7 @@ function appendBotMessage(answer, sources, cached) {
 function appendError(message) {
   const div = document.createElement("div");
   div.className = "error-bubble";
-  div.textContent = message;
+  div.innerHTML = `<span aria-hidden="true">⚠️</span><span>${escapeHtml(message)}</span>`;
   chatMessages.appendChild(div);
   scrollToBottom();
 }
@@ -100,9 +173,11 @@ function showLoading() {
   div.className = "loading-row";
   div.id = "loading-indicator";
   div.innerHTML = `
-    <span style="font-size:12px;color:#64748b;">Thinking</span>
-    <div class="dots"><span></span><span></span><span></span></div>
-  `;
+    <div class="avatar bot" aria-hidden="true">🎓</div>
+    <div class="loading-bubble">
+      <span>Searching course documents</span>
+      <div class="dots" aria-hidden="true"><span></span><span></span><span></span></div>
+    </div>`;
   chatMessages.appendChild(div);
   scrollToBottom();
   return div;
@@ -111,11 +186,6 @@ function showLoading() {
 function removeLoading() {
   const el = document.getElementById("loading-indicator");
   if (el) el.remove();
-}
-
-function clearWelcome() {
-  const welcome = chatMessages.querySelector(".welcome-message");
-  if (welcome) welcome.remove();
 }
 
 // ── Send message ───────────────────────────────────────────────────────────
@@ -133,7 +203,7 @@ async function sendMessage() {
   autoResizeInput();
 
   setLoading(true);
-  const loadingEl = showLoading();
+  showLoading();
 
   const requestId = "r-" + Date.now().toString(36) + "-" + Math.random().toString(36).slice(2, 9);
 
@@ -172,6 +242,7 @@ async function sendMessage() {
     setApiStatus("error");
   } finally {
     setLoading(false);
+    userInput.focus();
   }
 }
 
@@ -180,32 +251,40 @@ function setLoading(loading) {
   STATE.pending = loading;
   sendBtn.disabled = loading;
   userInput.disabled = loading;
+  chatMessages.setAttribute("aria-busy", loading ? "true" : "false");
 }
 
 function setApiStatus(status) {
-  apiStatusDot.className = "status-dot status-" + status;
-  apiStatusDot.title = status === "ok"
-    ? "API: Online"
-    : status === "error"
-      ? "API: Error"
-      : "API: Unknown";
+  apiStatus.className = "status-pill status-" + status;
+  const labels = { ok: "Online", error: "Offline", unknown: "Connecting…" };
+  apiStatusText.textContent = labels[status] || labels.unknown;
+  apiStatus.title = "API: " + (labels[status] || labels.unknown);
 }
 
 // ── Auto-resize textarea ───────────────────────────────────────────────────
 function autoResizeInput() {
   userInput.style.height = "auto";
-  userInput.style.height = Math.min(userInput.scrollHeight, 120) + "px";
+  userInput.style.height = Math.min(userInput.scrollHeight, 132) + "px";
 }
 
 // ── Stats polling ──────────────────────────────────────────────────────────
+function bumpIfChanged(el, newText) {
+  if (el.textContent !== newText) {
+    el.textContent = newText;
+    el.classList.remove("bump");
+    void el.offsetWidth;           // restart the animation
+    el.classList.add("bump");
+  }
+}
+
 async function fetchStats() {
   try {
     const res = await fetch("/api/stats");
     if (!res.ok) return;
     const data = await res.json();
-    statTotal.textContent  = data.total_questions.toLocaleString();
-    statGemini.textContent = data.gemini_api_calls.toLocaleString();
-    statCache.textContent  = data.cache_hits.toLocaleString();
+    bumpIfChanged(statTotal,  Number(data.total_questions).toLocaleString());
+    bumpIfChanged(statGemini, Number(data.gemini_api_calls).toLocaleString());
+    bumpIfChanged(statCache,  Number(data.cache_hits).toLocaleString());
   } catch (_) {}
 }
 
@@ -222,25 +301,19 @@ async function newChat() {
   } catch (_) {}
 
   STATE.sessionId = generateId();
-  chatMessages.innerHTML = `
-    <div class="welcome-message">
-      <div class="welcome-icon">📚</div>
-      <h2>Welcome to DPM-101 Helpdesk</h2>
-      <p>Ask me anything about your course — exam rules, grading policy, deadlines, certificate tracks, and more.</p>
-      <p class="welcome-note">All answers are sourced directly from official course documents.</p>
-    </div>
-  `;
+  renderWelcome();
+  userInput.value = "";
+  charCount.textContent = "0 / 2000";
+  charCount.className = "char-count";
+  autoResizeInput();
+  userInput.focus();
 }
 
-// ── Health check on load ───────────────────────────────────────────────────
+// ── Health check ───────────────────────────────────────────────────────────
 async function checkHealth() {
   try {
     const res = await fetch("/api/health");
-    if (res.ok) {
-      setApiStatus("ok");
-    } else {
-      setApiStatus("error");
-    }
+    setApiStatus(res.ok ? "ok" : "error");
   } catch (_) {
     setApiStatus("error");
   }
@@ -265,8 +338,18 @@ userInput.addEventListener("input", () => {
 
 newChatBtn.addEventListener("click", newChat);
 
+// Suggestion chips (event delegation — survives re-rendering the welcome screen)
+chatMessages.addEventListener("click", (e) => {
+  const chip = e.target.closest(".suggestion-chip");
+  if (!chip || STATE.pending) return;
+  userInput.value = chip.dataset.question || chip.textContent.trim();
+  autoResizeInput();
+  sendMessage();
+});
+
 // ── Init ───────────────────────────────────────────────────────────────────
+renderWelcome();
 checkHealth();
 fetchStats();
 STATE.statsInterval = setInterval(fetchStats, 15000);  // poll every 15 s
-
+userInput.focus();

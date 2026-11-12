@@ -3,57 +3,61 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="DPM-101 Course Helpdesk — answers grounded strictly in the official course documents." />
+  <meta name="theme-color" content="#0b2545" />
   <title>DPM-101 Course Helpdesk</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎓</text></svg>" />
   <link rel="stylesheet" href="/static/style.css" />
 </head>
 <body>
-  <!-- ── Header ── -->
+  <!-- ── Header ─────────────────────────────────────────────────────────── -->
   <header class="app-header">
     <div class="header-inner">
-      <div class="header-title">
-        <span class="badge">IIMBx</span>
-        <h1>DPM-101 Course Helpdesk</h1>
+      <div class="brand-mark" aria-hidden="true">🎓</div>
+      <div class="brand-text">
+        <div class="header-title">
+          <h1>DPM-101 Helpdesk</h1>
+          <span class="badge">IIMBx</span>
+        </div>
+        <p class="header-sub">Answers grounded strictly in official course documents</p>
       </div>
-      <p class="header-sub">
-        Answers are based strictly on official DPM-101 course documents.
-      </p>
     </div>
     <div class="header-status">
-      <span id="api-status" class="status-dot status-unknown" title="API status"></span>
+      <span id="api-status" class="status-pill status-unknown" role="status" aria-live="polite">
+        <span class="status-dot" aria-hidden="true"></span>
+        <span id="api-status-text">Connecting…</span>
+      </span>
     </div>
   </header>
 
-  <!-- ── Analytics bar ── -->
-  <div class="stats-bar">
+  <!-- ── Analytics bar ──────────────────────────────────────────────────── -->
+  <section class="stats-bar" aria-label="Usage statistics">
     <div class="stat-item">
-      <span class="stat-label">Total Questions Asked</span>
-      <span class="stat-value" id="stat-total">—</span>
-    </div>
-    <div class="stat-item">
-      <span class="stat-label">Gemini API Calls Made</span>
-      <span class="stat-value" id="stat-gemini">—</span>
-    </div>
-    <div class="stat-item">
-      <span class="stat-label">Answers from Cache</span>
-      <span class="stat-value" id="stat-cache">—</span>
-    </div>
-  </div>
-
-  <!-- ── Main chat area ── -->
-  <main class="chat-container">
-    <div class="chat-messages" id="chat-messages" role="log" aria-live="polite">
-      <div class="welcome-message">
-        <div class="welcome-icon">📚</div>
-        <h2>Welcome to DPM-101 Helpdesk</h2>
-        <p>
-          Ask me anything about your course — exam rules, grading policy,
-          deadlines, certificate tracks, and more.
-        </p>
-        <p class="welcome-note">
-          All answers are sourced directly from official course documents.
-        </p>
+      <span class="stat-icon" aria-hidden="true">💬</span>
+      <div class="stat-body">
+        <span class="stat-value" id="stat-total">—</span>
+        <span class="stat-label">Questions asked</span>
       </div>
     </div>
+    <div class="stat-item">
+      <span class="stat-icon" aria-hidden="true">✨</span>
+      <div class="stat-body">
+        <span class="stat-value" id="stat-gemini">—</span>
+        <span class="stat-label">Gemini API calls</span>
+      </div>
+    </div>
+    <div class="stat-item">
+      <span class="stat-icon" aria-hidden="true">⚡</span>
+      <div class="stat-body">
+        <span class="stat-value" id="stat-cache">—</span>
+        <span class="stat-label">Cache hits</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Main chat area ─────────────────────────────────────────────────── -->
+  <main class="chat-container">
+    <div class="chat-messages" id="chat-messages" role="log" aria-live="polite" aria-label="Conversation"></div>
 
     <!-- ── Input area ── -->
     <div class="input-area">
@@ -61,19 +65,24 @@
         <textarea
           id="user-input"
           class="chat-input"
-          placeholder="Ask a course question… (Enter to send, Shift+Enter for new line)"
+          placeholder="Ask a course question…"
           rows="1"
           maxlength="2000"
           aria-label="Your question"
         ></textarea>
         <button id="send-btn" class="send-btn" aria-label="Send message">
-          <span class="send-icon">➤</span>
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor"
+               stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M22 2 11 13" />
+            <path d="M22 2 15 22 11 13 2 9 22 2z" />
+          </svg>
         </button>
       </div>
       <div class="input-footer">
-        <button id="new-chat-btn" class="new-chat-btn" aria-label="Start new conversation">
-          ＋ New Chat
+        <button id="new-chat-btn" class="new-chat-btn" aria-label="Start a new conversation">
+          <span aria-hidden="true">＋</span> New chat
         </button>
+        <span class="input-hint" aria-hidden="true">Enter to send · Shift + Enter for a new line</span>
         <span id="char-count" class="char-count">0 / 2000</span>
       </div>
     </div>
@@ -82,4 +91,3 @@
   <script src="/static/app.js"></script>
 </body>
 </html>
-

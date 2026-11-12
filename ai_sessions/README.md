@@ -1,46 +1,48 @@
-# ai_sessions/ — Genuine AI-Assisted Development Session Records
+# AI-Assisted Development Records
 
-This directory contains **genuine exported records** of the AI-assisted
-sessions used to build this project. No fabricated or synthetic transcripts
-are included.
+This directory contains genuine, programmatically exported records of AI-assisted development sessions used to build the DPM-101 Course Helpdesk Chatbot.
 
-## Contents
+The records were exported from the local OpenCode session database (`opencode.db`). Original message order and development interactions have been preserved. Reasoning and tool execution details are available in expandable sections. Sensitive API credentials have been redacted.
 
-| File | Session | What it covers |
+## Development Session Archive
+
+| File | Session | Description |
 |---|---|---|
-| `2026-11-11-dpm101-main-build-session.md` | `ses_e34c9903affeuqR3Vf3i2FcUIg` | End-to-end build: implementation, 108 automated tests, live Gemini verification (19/19), UI overhaul, GitHub and Render deployment |
-| `2026-11-11-venv-activate-bat-path.md` | `ses_e32bcf761ffeGbs3yJoKdlaZL1` | Short environment-setup question about the virtualenv activation script |
+| `2026-11-11-dpm101-main-build-session.md` | Main development session | End-to-end project development, requirements analysis, architecture exploration, implementation, debugging, automated testing, Gemini integration, deployment preparation and verification. |
+| `2026-11-11-venv-activate-bat-path.md` | Environment setup session | Supplementary record documenting Python virtual-environment verification and development environment setup. |
 
-Both files were generated programmatically from the local OpenCode session
-database (`opencode.db`) in original message order. Reasoning and tool-call
-blocks are collapsed in `<details>` elements. API keys are redacted.
+## Main Development Session Highlights
 
-## How to export sessions from this coding environment (OpenCode)
+The primary development session documents the engineering process behind the chatbot, including:
 
-The project was developed with OpenCode (an AI coding agent). Session
-transcripts are stored locally and can be exported as Markdown:
+- **Requirements and document analysis:** Inspected the supplied course materials, identified conflicting policies, established document precedence and documented unsupported or ambiguous information.
+- **Backend architecture:** Developed a modular FastAPI application with document ingestion, BM25-based retrieval, policy-aware evidence filtering and Gemini integration.
+- **Reliability engineering:** Implemented response caching, duplicate-request protection, concurrent request handling, Gemini retries, timeout handling and graceful API failure responses.
+- **Security and correctness:** Addressed prompt injection in unmoderated student forum content and prevented unsupported course-policy claims.
+- **Frontend development:** Integrated the chat interface with backend APIs, source references, loading states and usage analytics.
+- **Automated testing:** Developed an eight-module test suite containing 108 automated tests.
+- **Integration verification:** Recorded local integration testing, live Gemini API checks and subsequent deployed-backend verification.
+- **Deployment workflow:** Prepared GitHub and Render deployment, verified backend functionality and documented remaining deployment checks.
 
-1. **From the OpenCode TUI/desktop app:** open the session used for this
-   project, then use the session export/share option (or copy the full
-   transcript) and save it as a `.md` file inside this directory, e.g.
-   `ai_sessions/session-01-inspection-and-gap-analysis.md`.
+## Export Integrity
 
-2. **From the session storage on disk:** OpenCode keeps session data under
-   `~/.local/share/opencode/` (session JSON/storage). Locate the session for
-   this project and export/copy its transcript into this folder.
+- Transcripts were generated programmatically from the original OpenCode session database.
+- Original user messages and assistant interactions were retained in their recorded order.
+- Tool inputs and outputs were preserved in the exported records.
+- API credentials were redacted before including the records in the repository.
+- Session descriptions in this README are editorial summaries for navigation; they do not replace or modify the original conversations.
 
-3. **Manual export (always valid):** copy the conversation from the AI tool
-   you used (including the prompts and the meaningful actions taken — file
-   edits, commands run, test results) and paste it into a dated Markdown file
-   here. Include: date, tool name, model, and a short description of what the
-   session accomplished.
+## Export Metadata
 
-Suggested naming convention:
+**Development environment:** OpenCode  
+**Agent:** `build`  
+**Model:** `opencode/big-pickle`  
+**Project directory:** `D:/iimbX_assing`  
+**Export format:** Markdown  
+**Export source:** Local OpenCode session database (`opencode.db`)
 
-```
-ai_sessions/
-  YYYY-MM-DD-<short-description>.md
-```
+## Important Note
 
-> **Note:** These exports are a submission requirement of the assignment.
-> Place the genuine files here before final submission.
+These records are provided as evidence of the actual AI-assisted development workflow. The original transcripts should be treated as the source of truth for individual prompts, tool executions, test results and development decisions.
+
+No synthetic conversations or reconstructed development sessions are presented as genuine exports.
